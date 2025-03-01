@@ -100,7 +100,7 @@ public class AuthIdentityService(
     public async Task<TokenResult> RefreshTokenAsync(string token, CancellationToken cancellationToken)
     {
         var user = await _userManager.Users.Include(x => x.RefreshTokens)
-                                           .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentStringUserId()), cancellationToken) ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
+                                           .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken) ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
 
         var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
 
@@ -137,7 +137,7 @@ public class AuthIdentityService(
                         Roles = x.UserRoles.Select(ur => ur.Role.Name).ToList(),
                         Avatar = x.Avatar.PathMedia ?? " "
                     })
-                    .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentStringUserId()), cancellationToken)
+                    .SingleOrDefaultAsync(x => x.Id == new string(_currentUser.GetCurrentUserId()), cancellationToken)
                     ?? throw AuthIdentityException.ThrowAccountDoesNotExist();
 
         return users;

@@ -39,6 +39,8 @@ public static class ConfigureServices
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddTransient<ApplicationDbContextInitializer>();
 
+        services.AddScoped<DapperContext>();
+
         return services;
     }
 }

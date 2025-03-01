@@ -3,4 +3,4 @@ using CleanArchitecture.Infrastructure.Interface;
 
 namespace CleanArchitecture.Application.Repositories;
 
-public class MediaRepository(ApplicationDbContext context) : GenericRepository<Media>(context), IMediaRepository { }
+public class MediaRepository(ApplicationDbContext context, DapperContext dapperContext) : GenericRepository<Media>(context, dapperContext), IMediaRepository { }

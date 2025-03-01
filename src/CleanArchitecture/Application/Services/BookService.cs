@@ -1,6 +1,7 @@
 using AutoMapper;
 using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Interfaces;
+using CleanArchitecture.Domain.Constants;
 using CleanArchitecture.Shared.Models;
 using CleanArchitecture.Shared.Models.Book;
 
@@ -11,28 +12,42 @@ public class BookService(IUnitOfWork unitOfWork, IMapper mapper) : IBookService
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<Pagination<BookDTO>> Get(int pageIndex, int pageSize)
+    public async Task<Pagination<BookDTO>> Get(SearchRequest request)
     {
-        var books = await _unitOfWork.BookRepository.ToPagination(
-            pageIndex: pageIndex,
-            pageSize: pageSize,
-            orderBy: x => x.Title,
-            ascending: true,
+        var books = await _unitOfWork.BookRepository.ToPagination<Book, BookDTO>(
+            tableName: DatabaseTableNames.Book,
+            pageIndex: request.PageIndex,
+            pageSize: request.PageSize,
+            orderByColumn: "Id",
+            ascending: request.IsDescending,
             selector: x => new BookDTO
             {
                 Id = x.Id,
-                Title = x.Title,
                 Price = x.Price,
-                Description = x.Description
+                Title = x.Title,
+                Description = x.Description,
             }
         );
 
-        return books;
+        return _mapper.Map<Pagination<BookDTO>>(books);
     }
 
     public async Task<BookDTO> Get(string id)
     {
-        var book = await _unitOfWork.BookRepository.FirstOrDefaultAsync(x => x.Id == id);
+
+        var bookWithDetails = await _unitOfWork.BookRepository.GetBookWithDetails(id);
+
+        var book = await _unitOfWork.BookRepository.GetByIdAsync<Book , BookDTO>(
+            tableName: DatabaseTableNames.Book,
+            id: id,
+            selector: x => new BookDTO()
+            {
+                Id = x.Id,
+                Price = x.Price,    
+                Description = x.Description,
+                Title = x.Title,
+            });
+
         return _mapper.Map<BookDTO>(book);
     }
 

@@ -1,4 +1,6 @@
 
+using CleanArchitecture.Shared.Models.Response;
+
 namespace CleanArchitecture.Web.Middlewares;
 
 public class GlobalExceptionMiddleware(ILoggerFactory logger) : IMiddleware
@@ -12,8 +14,12 @@ public class GlobalExceptionMiddleware(ILoggerFactory logger) : IMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError("GlobalExceptionMiddleware: {exception}", ex);
-            await context.Response.WriteAsync(ex.ToString());
+            _logger.LogError(ex, "Unhandled exception occurred.");
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
+
+            var response = ApiResponse<string>.Fail("An unexpected error occurred.");
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }

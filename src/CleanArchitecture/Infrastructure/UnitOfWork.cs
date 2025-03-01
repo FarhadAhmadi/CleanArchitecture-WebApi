@@ -11,20 +11,23 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
 
+    private readonly DapperContext _dapperContext;
+
     public IUserRepository UserRepository { get; }
     public IBookRepository BookRepository { get; }
     public IRefreshTokenRepository RefreshTokenRepository { get; }
     public IMediaRepository MediaRepository { get; }
     public IForgotPasswordRepository ForgotPasswordRepository { get; }
 
-    public UnitOfWork(ApplicationDbContext dbContext)
+    public UnitOfWork(ApplicationDbContext dbContext , DapperContext dapperContext)
     {
         _context = dbContext;
-        UserRepository = new UserRepository(_context);
-        BookRepository = new BookRepository(_context);
-        RefreshTokenRepository = new RefreshTokenRepository(_context);
-        MediaRepository = new MediaRepository(_context);
-        ForgotPasswordRepository = new ForgotPasswordRepository(_context);
+        _dapperContext = dapperContext;
+        UserRepository = new UserRepository(_context, _dapperContext);
+        BookRepository = new BookRepository(_context, _dapperContext);
+        RefreshTokenRepository = new RefreshTokenRepository(_context, _dapperContext);
+        MediaRepository = new MediaRepository(_context, _dapperContext);
+        ForgotPasswordRepository = new ForgotPasswordRepository(_context, _dapperContext);
     }
     public async Task SaveChangesAsync(CancellationToken token)
         => await _context.SaveChangesAsync(token);

@@ -8,21 +8,12 @@ public class CurrentUser(ITokenService tokenService, ICookieService cookieServic
     private readonly ITokenService _tokenService = tokenService;
     private readonly ICookieService _cookieService = cookieService;
 
-    public int GetCurrentUserId()
+    public string GetCurrentUserId()
     {
         var jwtCookie = _cookieService.Get();
         var token = _tokenService.ValidateToken(jwtCookie);
         var userId = token.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
 
-        return int.Parse(userId);
-    }
-
-    public string GetCurrentStringUserId()
-    {
-        var jwtCookie = _cookieService.Get();
-        var token = _tokenService.ValidateToken(jwtCookie);
-        var userId = token.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
-
-        return userId.ToString();
+        return userId;
     }
 }

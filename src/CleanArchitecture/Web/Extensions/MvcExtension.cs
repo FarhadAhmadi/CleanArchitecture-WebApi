@@ -16,6 +16,7 @@ public static class MvcExtension
 
         services.AddControllers(options => options.Filters.Add(typeof(ValidateModelFilter))).AddJsonOptions(options =>
         {
+            options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             // Ignore null values
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 

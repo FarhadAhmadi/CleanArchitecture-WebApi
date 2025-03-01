@@ -1,8 +1,11 @@
+using System.Text;
 using CleanArchitecture.Application;
 using CleanArchitecture.Application.Common;
 using CleanArchitecture.Infrastructure;
 using CleanArchitecture.Infrastructure.Data;
 using CleanArchitecture.Web.Middlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CleanArchitecture.Web.Extensions;
 

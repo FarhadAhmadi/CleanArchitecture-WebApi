@@ -1,3 +1,4 @@
+using CleanArchitecture.Domain.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,7 +8,7 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
 {
     public void Configure(EntityTypeBuilder<Book> builder)
     {
-        builder.ToTable("Book");
+        builder.ToTable(DatabaseTableNames.Book);
 
         //Id
         builder.HasKey(x => x.Id);
