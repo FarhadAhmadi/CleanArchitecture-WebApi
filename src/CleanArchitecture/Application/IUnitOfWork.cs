@@ -1,3 +1,4 @@
+using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Infrastructure.Interface;
 
 namespace CleanArchitecture.Application;
@@ -6,6 +7,9 @@ public interface IUnitOfWork
 {
     IUserRepository UserRepository { get; }
     IBookRepository BookRepository { get; }
+    IAuthorRepository AuthorRepository { get; }
+    IPublisherRepository PublisherRepository{ get; }
+    ICategoryRepository CategoryRepository { get; }
     IRefreshTokenRepository RefreshTokenRepository { get; }
     IMediaRepository MediaRepository { get; }
     IForgotPasswordRepository ForgotPasswordRepository { get; }

@@ -1,7 +1,7 @@
-using CleanArchitecture.Shared.Models;
+using CleanArchitecture.Shared.Models.Base;
 
 namespace CleanArchitecture.Domain.Entities;
-public class RefreshToken : BaseModel
+public class RefreshToken : BaseEntity
 {
     public string Token { get; set; }
     public DateTime Expires { get; set; }

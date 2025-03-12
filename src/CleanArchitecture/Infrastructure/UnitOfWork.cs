@@ -15,9 +15,14 @@ public class UnitOfWork : IUnitOfWork
 
     public IUserRepository UserRepository { get; }
     public IBookRepository BookRepository { get; }
+    public ICategoryRepository CategoryRepository { get; }
     public IRefreshTokenRepository RefreshTokenRepository { get; }
     public IMediaRepository MediaRepository { get; }
     public IForgotPasswordRepository ForgotPasswordRepository { get; }
+
+    public IAuthorRepository AuthorRepository { get; }
+
+    public IPublisherRepository PublisherRepository { get; }
 
     public UnitOfWork(ApplicationDbContext dbContext , DapperContext dapperContext)
     {
@@ -28,24 +33,32 @@ public class UnitOfWork : IUnitOfWork
         RefreshTokenRepository = new RefreshTokenRepository(_context, _dapperContext);
         MediaRepository = new MediaRepository(_context, _dapperContext);
         ForgotPasswordRepository = new ForgotPasswordRepository(_context, _dapperContext);
+        AuthorRepository = new AuthorRepository(_context, _dapperContext);
+        PublisherRepository = new PublisherRepository(_context, _dapperContext);
+        CategoryRepository = new CategoryRepository(_context, _dapperContext);
     }
     public async Task SaveChangesAsync(CancellationToken token)
         => await _context.SaveChangesAsync(token);
 
     public async Task ExecuteTransactionAsync(Action action, CancellationToken token)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync(token);
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            action();
-            await _context.SaveChangesAsync(token);
-            await transaction.CommitAsync(token);
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(token);
-            throw TransactionException.TransactionNotExecuteException(ex);
-        }
+            using var transaction = await _context.Database.BeginTransactionAsync(token);
+            try
+            {
+                action();
+                await _context.SaveChangesAsync(token);
+                await transaction.CommitAsync(token);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(token);
+                throw TransactionException.TransactionNotExecuteException(ex);
+            }
+
+        });
     }
 
     public async Task ExecuteTransactionAsync(Func<Task> action, CancellationToken token)

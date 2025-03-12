@@ -1,8 +1,8 @@
-﻿using CleanArchitecture.Shared.Models;
+﻿using CleanArchitecture.Shared.Models.Base;
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class Order : BaseModel
+public class Order : BaseEntity
 {
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 

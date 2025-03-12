@@ -1,22 +1,22 @@
-using CleanArchitecture.Shared.Models;
+using CleanArchitecture.Shared.Models.Base;
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class Book : BaseModel
+public class Book : BaseEntity
 {
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public double? Price { get; set; }
+    public string Title { get; set; }
+    public string Description { get; set; } 
+    public double Price { get; set; }
 
     // Foreign Keys
-    public required string AuthorId { get; set; }
-    public Author Author { get; set; } = null!;
+    public string AuthorId { get; set; }
+    public Author Author { get; set; }
 
     public string PublisherId { get; set; }
-    public Publisher Publisher { get; set; } = null!;
+    public Publisher Publisher { get; set; }
 
     // Navigation Properties
-    public ICollection<BookCategory> BookCategories { get; set; } = new List<BookCategory>();
-    public ICollection<Review> Reviews { get; set; } = new List<Review>();
-    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<BookCategory> BookCategories { get; set; }
+    public ICollection<Review> Reviews { get; set; }
+    public ICollection<OrderItem> OrderItems { get; set; }
 }

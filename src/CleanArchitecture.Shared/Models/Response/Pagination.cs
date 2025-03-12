@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace CleanArchitecture.Shared.Models;
+namespace CleanArchitecture.Shared.Models.Response;
 
 public class Pagination<T>(List<T> items, int count, int pageIndex, int pageSize)
 {

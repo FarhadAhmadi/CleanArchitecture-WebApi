@@ -1,6 +1,7 @@
+using CleanArchitecture.Application.Common.Exceptions;
 using CleanArchitecture.Application.Common.Interfaces;
-using CleanArchitecture.Shared.Models;
-using CleanArchitecture.Shared.Models.Book;
+using CleanArchitecture.Shared.Models.Book.DTOs;
+using CleanArchitecture.Shared.Models.Book.Requests;
 using CleanArchitecture.Shared.Models.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,10 +9,33 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace CleanArchitecture.Web.Controller;
 
-public class BookController(IBookService bookService, ILogger<BookController> logger) : BaseController
+public class BookController : BaseController
 {
-    private readonly IBookService _bookService = bookService;
-    private readonly ILogger<BookController> _logger = logger;
+    private readonly IBookService _bookService;
+    public BookController(IBookService bookService)
+    {
+        _bookService = bookService;
+    }
+
+    /// <summary>
+    /// get a list of books
+    /// </summary>
+    /// <param name="SearchRequest"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [SwaggerResponse(200, "Books retrieved successfully.", typeof(ApiResponse<Pagination<BookDTO>>))]
+    public async Task<IActionResult> Get(
+        [FromQuery] BookSearchRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            throw new UserFriendlyException(ErrorCode.BadRequest, "Invalid request parameters.");
+        }
+
+        var books = await _bookService.Get(request);
+
+        return Success(books, "Books retrieved successfully");
+    }
 
     /// <summary>
     /// get a book by id
@@ -25,27 +49,13 @@ public class BookController(IBookService bookService, ILogger<BookController> lo
     public async Task<IActionResult> Get(string id)
     {
         if (!Guid.TryParse(id, out _))
-            return Failure("Invalid ID format");
+            throw new UserFriendlyException(ErrorCode.BadRequest, "Invalid ID format");
 
         var book = await _bookService.Get(id);
         if (book is null)
-            return NotFoundResponse("Book not found");
+            throw new UserFriendlyException(ErrorCode.NotFound, "Book not found");
 
         return Success(book, "Book retrieved successfully");
-    }
-
-    /// <summary>
-    /// get a list of books
-    /// </summary>
-    /// <param name="SearchRequest"></param>
-    /// <returns></returns>
-    [HttpGet]
-    [SwaggerResponse(200, "Books retrieved successfully.", typeof(ApiResponse<Pagination<BookDTO>>))]
-    public async Task<IActionResult> Get(
-        [FromQuery] SearchRequest request)
-    {
-        var books = await _bookService.Get(request);
-        return Success(books, "Books retrieved successfully");
     }
 
     /// <summary>
@@ -54,11 +64,19 @@ public class BookController(IBookService bookService, ILogger<BookController> lo
     /// <param name="request"></param>
     /// <param name="token"></param>
     /// <returns></returns>
+    [Authorize]
     [HttpPost]
     [SwaggerResponse(201, "Book added successfully.", typeof(ApiResponse<BookDTO>))]
     [SwaggerResponse(400, "Invalid request.")]
-    public async Task<IActionResult> Add(AddBookRequest request, CancellationToken token)
-        => Ok(await _bookService.Add(request, token));
+    public async Task<IActionResult> Add(CreateBookRequest request, CancellationToken token)
+    {
+        if (!ModelState.IsValid)
+            throw new UserFriendlyException(ErrorCode.BadRequest, "Invalid request data");
+
+        var book = await _bookService.Add(request, token);
+        return CreatedAtAction(nameof(Get), new { id = book.Id }, book);
+    }
+
 
     /// <summary>
     /// update a book
@@ -72,7 +90,18 @@ public class BookController(IBookService bookService, ILogger<BookController> lo
     [SwaggerResponse(400, "Invalid request.")]
     [SwaggerResponse(404, "Book not found.")]
     public async Task<IActionResult> Update(UpdateBookRequest request, CancellationToken token)
-        => Ok(await _bookService.Update(request, token));
+    {
+        if (!ModelState.IsValid)
+        {
+            throw new UserFriendlyException(ErrorCode.BadRequest, "Invalid request data.");
+        }
+
+        var book = await _bookService.Update(request, token);
+        if (book == null)
+            throw new UserFriendlyException(ErrorCode.NotFound, "Book not found");
+
+        return Success(book, "Book updated successfully.");
+    }
 
     /// <summary>
     /// delete a book by id
@@ -85,5 +114,14 @@ public class BookController(IBookService bookService, ILogger<BookController> lo
     [SwaggerResponse(200, "Book deleted successfully.")]
     [SwaggerResponse(404, "Book not found.")]
     public async Task<IActionResult> Delete(string id, CancellationToken token)
-        => Ok(await _bookService.Delete(id, token));
+    {
+        if (!Guid.TryParse(id, out _))
+            throw new UserFriendlyException(ErrorCode.BadRequest, "Invalid ID format.");
+
+        var result = await _bookService.Delete(id, token);
+        if (!result)
+            throw new UserFriendlyException(ErrorCode.Internal, "Internal Error Happend");
+
+        return NoContent();
+    }
 }

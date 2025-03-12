@@ -1,13 +1,14 @@
-using CleanArchitecture.Shared.Models;
-using CleanArchitecture.Shared.Models.Book;
+using CleanArchitecture.Shared.Models.Book.DTOs;
+using CleanArchitecture.Shared.Models.Book.Requests;
+using CleanArchitecture.Shared.Models.Response;
 
 namespace CleanArchitecture.Application.Common.Interfaces;
 
 public interface IBookService
 {
-    Task<Pagination<BookDTO>> Get(SearchRequest request);
+    Task<Pagination<BookDTO>> Get(BookSearchRequest request);
     Task<BookDTO> Get(string id);
-    Task<BookDTO> Add(AddBookRequest request, CancellationToken token);
+    Task<BookDTO> Add(CreateBookRequest request, CancellationToken token);
     Task<BookDTO> Update(UpdateBookRequest request, CancellationToken token);
-    Task<BookDTO> Delete(string id, CancellationToken token);
+    Task<bool> Delete(string id, CancellationToken token);
 }

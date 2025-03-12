@@ -1,6 +1,13 @@
 using AutoMapper;
-using CleanArchitecture.Shared.Models;
-using CleanArchitecture.Shared.Models.Book;
+using CleanArchitecture.Shared.Models.Author.DTOs;
+using CleanArchitecture.Shared.Models.Author.Requests;
+using CleanArchitecture.Shared.Models.Book.DTOs;
+using CleanArchitecture.Shared.Models.Book.Requests;
+using CleanArchitecture.Shared.Models.Category.DTOs;
+using CleanArchitecture.Shared.Models.Category.Requests;
+using CleanArchitecture.Shared.Models.Publisher.DTOs;
+using CleanArchitecture.Shared.Models.Publisher.Requests;
+using CleanArchitecture.Shared.Models.Response;
 using CleanArchitecture.Shared.Models.User;
 
 namespace CleanArchitecture.Application.Common.Mappings;
@@ -10,8 +17,24 @@ public class MapProfile : Profile
     public MapProfile()
     {
         CreateMap<Book, BookDTO>().ReverseMap();
-        CreateMap<Book, AddBookRequest>().ReverseMap();
+        CreateMap<Book, BookEditDTO>().ReverseMap();
+        CreateMap<Book, CreateBookRequest>().ReverseMap();
         CreateMap<Book, UpdateBookRequest>().ReverseMap();
+
+        CreateMap<Author, AuthorDTO>().ReverseMap();
+        CreateMap<Author, AuthorEditDTO>().ReverseMap();
+        CreateMap<Author, CreateAuthorRequest>().ReverseMap();
+        CreateMap<Author, UpdateAuthorRequest>().ReverseMap();
+
+        CreateMap<Publisher, PublisherDTO>().ReverseMap();
+        CreateMap<Publisher, PublisherEditDTO>().ReverseMap();
+        CreateMap<Publisher, CreatePublisherRequest>().ReverseMap();
+        CreateMap<Publisher, UpdatePublisherRequest>().ReverseMap();
+
+        CreateMap<Category, CategoryDTO>().ReverseMap();
+        CreateMap<Category, CategoryEditDTO>().ReverseMap();
+        CreateMap<Category, CreateCategoryRequest>().ReverseMap();
+        CreateMap<Category, UpdateCategoryRequest>().ReverseMap();
 
         CreateMap<User, UserSignInRequest>().ReverseMap();
         CreateMap<User, UserSignInResponse>().ReverseMap();

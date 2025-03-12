@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using CleanArchitecture.Shared.Models;
 using CleanArchitecture.Infrastructure.Data;
 using CleanArchitecture.Infrastructure.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,9 @@ using CleanArchitecture.Application.Common;
 using Microsoft.Data.SqlClient;
 using CleanArchitecture.Application.Common.Utilities;
 using System.Text;
+using CleanArchitecture.Shared.Models.Response;
+using CleanArchitecture.Shared.Models.Base;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace CleanArchitecture.Application.Repositories;
 
@@ -26,13 +28,13 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     #region Dapper Methods
 
-    public async Task<Pagination<TResult>> ToPagination<T, TResult>(
+    public async Task<Pagination<TResult>> ToPaginationWithDapper<T, TResult>(
         string tableName,
         int pageIndex,
         int pageSize,
         Expression<Func<T, TResult>> selector,
         string? orderByColumn = "Id",
-        bool ascending = true) where T : BaseModel
+        bool ascending = true) where T : BaseEntity
     {
         using var connection = _dapperContext.CreateConnection();
 
@@ -94,7 +96,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     #endregion 
 
-    public async Task<T> GetByIdAsync(string tableName, object id)
+    public async Task<T> GetByIdAsyncWithDapper(string tableName, object id)
     {
         using var connection = _dapperContext.CreateConnection();
 
@@ -103,32 +105,48 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await connection.QueryFirstOrDefaultAsync<T>(sql, new { Id = id });
     }
 
-    public async Task<TResult?> GetByIdAsync<T, TResult>(
+    public async Task<TResult?> GetByIdAsyncWithDapper<TResult>(
         string tableName,
         object id,
-        Expression<Func<T, TResult>> selector)
+        Expression<Func<T, TResult>> selector = null)
+    {
+        try
+        {
+            using var connection = _dapperContext.CreateConnection();
+
+            // Extract selected columns from the selector expression
+            var selectedColumns = ExtracterHelper.ExtractSelectedColumns(selector);
+
+            // Generate the column selection dynamically
+            string selectedColumnsSql = string.Join(", ", selectedColumns);
+
+            // SQL query
+            string sql = $"SELECT {selectedColumnsSql} FROM {tableName} WHERE Id = @Id";
+
+            return await connection.QueryFirstOrDefaultAsync<TResult>(sql, new { Id = id });
+        }
+        catch (Exception ex)
+        {
+            var a = 1;
+            throw;
+        }
+    }
+
+    public async Task<bool> AnyAsyncWithDapper<T>(string tableName, string id)
     {
         using var connection = _dapperContext.CreateConnection();
 
-        // Extract selected columns from the selector expression
-        var selectedColumns = ExtracterHelper.ExtractSelectedColumns(selector);
+        // Build the full SQL query
+        string sql = $"SELECT COUNT(1) FROM {tableName} WHERE Id = @Id";
 
-        // Generate the column selection dynamically
-        string selectedColumnsSql = string.Join(", ", selectedColumns);
+        var parameters = new DynamicParameters();
+        parameters.Add("Id", id);
 
-        // SQL query
-        string sql = $"SELECT {selectedColumnsSql} FROM {tableName} WHERE Id = @Id";
-
-        return await connection.QueryFirstOrDefaultAsync<TResult>(sql, new { Id = id });
+        // Execute the query with the parameters
+        return await connection.ExecuteScalarAsync<int>(sql, parameters) > 0;
     }
 
-    public async Task<bool> ExistsAsync(string tableName, string keyColumn, object value)
-    {
-        using var connection = _dapperContext.CreateConnection();
-        string sql = $"SELECT COUNT(1) FROM {tableName} WHERE {keyColumn} = @Value";
 
-        return await connection.ExecuteScalarAsync<int>(sql, new { Value = value }) > 0;
-    }
 
 
     #endregion
@@ -174,6 +192,38 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task<T> GetByIdAsync(object id)
     {
         return await _dbSet.FindAsync(id);
+    }
+
+    public async Task<TResult> GetSingleData<TResult>(
+    Expression<Func<T, bool>>? filter = null,
+    Func<IQueryable<T>, IQueryable<T>>? include = null,
+    Expression<Func<T, object>>? orderBy = null,
+    bool ascending = true,
+    Expression<Func<T, TResult>> selector = null)
+    {
+        IQueryable<T> query = _dbSet.AsQueryable();
+
+        if (include != null)
+        {
+            query = include(query);
+        }
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        // Default ordering by Id if no orderBy is provided
+        orderBy ??= x => EF.Property<object>(x, "Id");
+
+        query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
+
+        var projectedQuery = query.Select(selector);
+
+        // Retrieve the first matching result or default if not found
+        var result = await projectedQuery.FirstOrDefaultAsync();
+
+        return result;
     }
 
     public async Task<Pagination<TResult>> ToPagination<TResult>(

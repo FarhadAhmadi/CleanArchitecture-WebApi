@@ -10,8 +10,12 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddApplicationService(this IServiceCollection services, AppSettings appsettings)
     {
+        services.AddTransient<IUserContext, UserContext>();
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IBookService, BookService>();
+        services.AddTransient<IAuthorService, AuthorService>();
+        services.AddTransient<IPublisherService, PublisherService>();
+        services.AddTransient<ICategoryService, CategoryService>();
         services.AddTransient<IMailService, MailService>();
         services.AddTransient<IMediaService, MediaService>();
         services.AddTransient<IRoleService, RoleService>();

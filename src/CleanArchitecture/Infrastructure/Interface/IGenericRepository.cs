@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
-using CleanArchitecture.Shared.Models;
+using CleanArchitecture.Shared.Models.Base;
+using CleanArchitecture.Shared.Models.Response;
 
 namespace CleanArchitecture.Infrastructure.Interface;
 
@@ -8,20 +9,21 @@ public interface IGenericRepository<T> where T : class
 
     #region Dapper
 
-    Task<Pagination<TResult>> ToPagination<T, TResult>(
+    Task<Pagination<TResult>> ToPaginationWithDapper<T, TResult>(
     string tableName,
     int pageIndex,
     int pageSize,
     Expression<Func<T, TResult>> selector,
     string? orderByColumn = "Id",
-    bool ascending = true) where T : BaseModel;
+    bool ascending = true) where T : BaseEntity;
 
-    Task<T> GetByIdAsync(string tableName, object id);
-    Task<TResult> GetByIdAsync<T, TResult>(
+    Task<T> GetByIdAsyncWithDapper(string tableName, object id);
+    Task<TResult?> GetByIdAsyncWithDapper<TResult>(
         string tableName,
-        object id, Expression<Func<T, TResult>> selector);
+        object id,
+        Expression<Func<T, TResult>> selector = null);
 
-    Task<bool> ExistsAsync(string tableName, string keyColumn, object value);
+    Task<bool> AnyAsyncWithDapper<T>(string tableName, string id);
 
     #endregion
 
@@ -34,6 +36,13 @@ public interface IGenericRepository<T> where T : class
     Task<int> CountAsync(Expression<Func<T, bool>> filter);
     Task<int> CountAsync();
     Task<T> GetByIdAsync(object id);
+    Task<TResult> GetSingleData<TResult>(
+        Expression<Func<T, bool>>? filter = null,
+        Func<IQueryable<T>, IQueryable<T>>? include = null,
+        Expression<Func<T, object>>? orderBy = null,
+        bool ascending = true,
+        Expression<Func<T, TResult>> selector = null);
+
     Task<Pagination<TResult>> ToPagination<TResult>(
         int pageIndex,
         int pageSize,

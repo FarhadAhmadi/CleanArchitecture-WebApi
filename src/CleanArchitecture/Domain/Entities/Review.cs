@@ -1,8 +1,8 @@
-﻿using CleanArchitecture.Shared.Models;
+﻿using CleanArchitecture.Shared.Models.Base;
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class Review : BaseModel
+public class Review : BaseEntity
 {
     public string ReviewerName { get; set; } = string.Empty;
     public string Comment { get; set; } = string.Empty;

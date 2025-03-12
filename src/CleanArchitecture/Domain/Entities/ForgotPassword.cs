@@ -1,9 +1,8 @@
-
-using CleanArchitecture.Shared.Models;
+using CleanArchitecture.Shared.Models.Base;
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class ForgotPassword : BaseModel
+public class ForgotPassword : BaseEntity
 {
     public string UserId { get; set; }
     public string Email { get; set; }

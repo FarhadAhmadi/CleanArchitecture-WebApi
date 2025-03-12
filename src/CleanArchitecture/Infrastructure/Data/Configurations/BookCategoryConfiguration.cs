@@ -9,7 +9,6 @@ public class BookCategoryConfiguration : IEntityTypeConfiguration<BookCategory>
     {
         builder.ToTable("BookCategories");
 
-
         builder
             .HasKey(bc => new { bc.BookId, bc.CategoryId });
 

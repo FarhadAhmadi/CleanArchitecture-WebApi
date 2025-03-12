@@ -1,8 +1,8 @@
-using CleanArchitecture.Shared.Models;
+using CleanArchitecture.Shared.Models.Base;
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class Media : BaseModel
+public class Media : BaseEntity
 {
     public string MediaId { get; set; }
     public MediaType Type { get; set; }
